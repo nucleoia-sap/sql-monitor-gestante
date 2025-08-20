@@ -281,7 +281,6 @@ SELECT
 
 
 FROM consultas_enriquecidas
-where fase_atual = 'Gestação'
 ORDER BY
  data_consulta DESC;
 
