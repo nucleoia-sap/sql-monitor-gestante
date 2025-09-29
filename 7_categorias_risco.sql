@@ -20,8 +20,9 @@ WITH riscos_separados AS (
     id_gestacao,
     TRIM(risco) AS categoria_risco
 --  FROM {{ ref('mart_bi_gestacoes__linha_tempo') }},
- FROM `rj-sms-sandbox.sub_pav_us._linha_tempo`, 
-    UNNEST(SPLIT(categorias_risco, ';')) AS risco
+ FROM `rj-sms-sandbox.sub_pav_us._linha_tempo`
+  --Ajuste UNNEST (foi retirado a vírgula ao fim da linha acima)
+    left join UNNEST(SPLIT(categorias_risco, ';')) AS risco
   WHERE 
     TRIM(risco) != ''  -- Remove entradas vazias
 )

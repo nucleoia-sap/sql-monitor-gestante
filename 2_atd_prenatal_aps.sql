@@ -140,48 +140,95 @@ peso_altura_inicio AS (
 ),
 
 
--- Atendimentos de pré-natal APS
+-- -- Atendimentos de pré-natal APS
+-- atendimentos_filtrados AS (
+--  SELECT
+--    ea.id_hci,
+--    ea.paciente.id_paciente,
+--    ea.entrada_data,
+--    ea.estabelecimento.nome AS estabelecimento,
+--    ea.estabelecimento.estabelecimento_tipo,
+--    ea.profissional_saude_responsavel.nome AS profissional_nome,
+--    ea.profissional_saude_responsavel.especialidade AS profissional_categoria,
+--    ea.medidas.altura,
+--    ea.medidas.peso,
+--    ea.medidas.imc,
+--    ea.medidas.pressao_sistolica,
+--    ea.medidas.pressao_diastolica,
+--    ea.motivo_atendimento,
+--    ea.desfecho_atendimento,
+--   --  c.id AS cid,
+--    STRING_AGG(DISTINCT c.id, '; ' ORDER BY c.id) AS cid_string
+-- --  FROM {{ ref('mart_historico_clinico__episodio') }} ea,
+--  FROM `rj-sms.saude_historico_clinico.episodio_assistencial` ea
+--  --Ajuste UNNEST (foi retirado a vírgula ao fim da linha acima)
+--   left join UNNEST(ea.condicoes) AS c
+--  WHERE ea.subtipo = 'Atendimento SOAP'
+--    AND LOWER(ea.prontuario.fornecedor) = 'vitacare'
+--    AND c.situacao = 'ATIVO'
+--   --  AND (c.id = 'Z321' OR c.id LIKE 'Z34%' OR c.id LIKE 'Z35%')
+--    AND ea.profissional_saude_responsavel.especialidade IN (
+--      'Médico da estratégia de saúde da família',
+--      'Enfermeiro da estratégia saúde da família',
+--      'Enfermeiro - Modelo B',
+--      'Médico Clínico',
+--      'Médico Ginecologista e Obstetra - NASF',
+--      'Médico Ginecologista - Modelo B',
+--      'Médico Clinico - Modelo B',
+--      'Enfermeiro obstétrico',
+--      'Enfermeiro',
+--      'Enfermeiro Obstetrico - Nasf',
+--      'Médico Generalista',
+--      'Médico de Família e Comunidade'
+--    )
+--    GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14
+-- ),
+
+-- Atendimentos de pré-natal APS - Refatorado para incluir atendimentos de enfermeiros sem CID
+-- Solução robusta e testada
 atendimentos_filtrados AS (
- SELECT
-   ea.id_hci,
-   ea.paciente.id_paciente,
-   ea.entrada_data,
-   ea.estabelecimento.nome AS estabelecimento,
-   ea.estabelecimento.estabelecimento_tipo,
-   ea.profissional_saude_responsavel.nome AS profissional_nome,
-   ea.profissional_saude_responsavel.especialidade AS profissional_categoria,
-   ea.medidas.altura,
-   ea.medidas.peso,
-   ea.medidas.imc,
-   ea.medidas.pressao_sistolica,
-   ea.medidas.pressao_diastolica,
-   ea.motivo_atendimento,
-   ea.desfecho_atendimento,
-   c.id AS cid,
-   -- STRING_AGG(DISTINCT c.id, '; ' ORDER BY c.id) AS cid_string
---  FROM {{ ref('mart_historico_clinico__episodio') }} ea,
- FROM `rj-sms.saude_historico_clinico.episodio_assistencial` ea
- --Ajuste UNNEST (foi retirado a vírgula ao fim da linha acima)
-  left join UNNEST(ea.condicoes) AS c
- WHERE ea.subtipo = 'Atendimento SOAP'
-   AND LOWER(ea.prontuario.fornecedor) = 'vitacare'
-   AND c.situacao = 'ATIVO'
-  --  AND (c.id = 'Z321' OR c.id LIKE 'Z34%' OR c.id LIKE 'Z35%')
-   AND ea.profissional_saude_responsavel.especialidade IN (
-     'Médico da estratégia de saúde da família',
-     'Enfermeiro da estratégia saúde da família',
-     'Enfermeiro - Modelo B',
-     'Médico Clínico',
-     'Médico Ginecologista e Obstetra - NASF',
-     'Médico Ginecologista - Modelo B',
-     'Médico Clinico - Modelo B',
-     'Enfermeiro obstétrico',
-     'Enfermeiro',
-     'Enfermeiro Obstetrico - Nasf',
-     'Médico Generalista',
-     'Médico de Família e Comunidade'
-   )
+SELECT
+  ea.id_hci,
+  ea.paciente.id_paciente,
+  ea.entrada_data,
+  ea.estabelecimento.nome AS estabelecimento,
+  ea.estabelecimento.estabelecimento_tipo,
+  ea.profissional_saude_responsavel.nome AS profissional_nome,
+  ea.profissional_saude_responsavel.especialidade AS profissional_categoria,
+  ANY_VALUE(ea.medidas.altura) AS altura,
+  ANY_VALUE(ea.medidas.peso) AS peso,
+  ANY_VALUE(ea.medidas.imc) AS imc,
+  ANY_VALUE(ea.medidas.pressao_sistolica) AS pressao_sistolica,
+  ANY_VALUE(ea.medidas.pressao_diastolica) AS pressao_diastolica,
+  ANY_VALUE(ea.motivo_atendimento) AS motivo_atendimento,
+  ANY_VALUE(ea.desfecho_atendimento) AS desfecho_atendimento,
+  STRING_AGG(c.id, ', ' ORDER BY c.id) AS cid_string
+
+--   FROM {{ ref('mart_historico_clinico__episodio') }} ea
+FROM `rj-sms.saude_historico_clinico.episodio_assistencial` ea
+LEFT JOIN UNNEST(ea.condicoes) AS c
+WHERE ea.subtipo = 'Atendimento SOAP'
+AND LOWER(ea.prontuario.fornecedor) = 'vitacare'
+-- AND c.situacao = 'ATIVO'
+-- outros filtros
+AND ea.profissional_saude_responsavel.especialidade IN (
+    'Médico da estratégia de saúde da família',
+    'Enfermeiro da estratégia saúde da família',
+    'Enfermeiro - Modelo B',
+    'Médico Clínico',
+    'Médico Ginecologista e Obstetra - NASF',
+    'Médico Ginecologista - Modelo B',
+    'Médico Clinico - Modelo B',
+    'Enfermeiro obstétrico',
+    'Enfermeiro',
+    'Enfermeiro Obstetrico - Nasf',
+    'Médico Generalista',
+    'Médico de Família e Comunidade'
+  )
+  GROUP BY 1,2,3,4,5,6,7
 ),
+
+
 
 
 -- Join com gestação
@@ -270,7 +317,7 @@ SELECT
 
 
  motivo_atendimento AS descricao_s,
- cid,
+ cid_string,
  desfecho_atendimento AS desfecho,
  prescricoes,
 
@@ -281,6 +328,7 @@ SELECT
 
 
 FROM consultas_enriquecidas
+where fase_atual = 'Gestação'
 ORDER BY
  data_consulta DESC;
 
