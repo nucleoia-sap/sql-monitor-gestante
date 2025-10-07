@@ -242,9 +242,11 @@ eventos_parto AS (
         ea.motivo_atendimento AS motivo_atencimento_parto, -- "atencimento" parece um typo, mas mantendo como na original
         ea.desfecho_atendimento AS desfecho_atendimento_parto,
         CASE
-            WHEN REGEXP_CONTAINS(c.id, r'\bO8[0-4]\b')
+            -- WHEN c.id LIKE 'O8[0-4]%'
+            WHEN REGEXP_CONTAINS(c.id, r'\bO8[0-4]\b') --Ajuste
             OR c.id LIKE 'Z37%'
             OR c.id LIKE 'Z39%' THEN 'Parto' -- Ajustado para O80-O84
+            -- WHEN c.id LIKE 'O0[0-4]%' THEN 'Aborto' -- Ajustado para O00-O04
             WHEN REGEXP_CONTAINS(c.id, r'\bO0[0-4]\b') THEN 'Aborto' -- Ajustado para O00-O04
             ELSE 'Outro' -- Pode ser Z38 (Nascido vivo) se não coberto por Z37 (Resultado do parto)
         END AS tipo_parto,
@@ -438,11 +440,13 @@ condicoes_flags AS (
                     REGEXP_CONTAINS(cg.cid, r'\bI1[0-5]\b')
                     OR cg.cid LIKE 'O10%'
                 )
-                AND cg.data_diagnostico < COALESCE(
-                    f.data_fim_efetiva,
-                    f.dpp,
-                    CURRENT_DATE()
-                ) THEN 1
+                
+                -- AND cg.data_diagnostico < COALESCE(
+                --     f.data_fim_efetiva,
+                --     f.dpp,
+                --     CURRENT_DATE()
+                -- ) 
+                THEN 1
                 ELSE 0
             END
         ) AS hipertensao_previa,
@@ -450,26 +454,32 @@ condicoes_flags AS (
         MAX(
             CASE
                 WHEN (
-                    cg.cid LIKE 'O11%'
-                    OR cg.cid LIKE 'O14%'
+                    -- cg.cid LIKE 'O11%'
+                    -- OR cg.cid LIKE 'O14%'
+                    cg.cid LIKE '%O11%'
+                    OR cg.cid LIKE '%O14%'
                 )
-                AND cg.data_diagnostico BETWEEN f.data_inicio AND COALESCE(
-                    f.data_fim_efetiva,
-                    f.dpp,
-                    CURRENT_DATE()
-                )  THEN 1
+                -- AND cg.data_diagnostico BETWEEN f.data_inicio AND COALESCE(
+                --     f.data_fim_efetiva,
+                --     f.dpp,
+                --     CURRENT_DATE()
+                -- )  
+                THEN 1
                 ELSE 0
             END
         ) AS preeclampsia,
         -- Hipertensão Não Especificada: CID O16 DURANTE a gestação
         MAX(
             CASE
-                WHEN cg.cid = 'O16'
-                AND cg.data_diagnostico BETWEEN f.data_inicio AND COALESCE(
-                    f.data_fim_efetiva,
-                    f.dpp,
-                    CURRENT_DATE()
-                )  THEN 1
+                WHEN
+                    -- cg.cid = 'O16' 
+                    cg.cid = '%O16%'
+                -- AND cg.data_diagnostico BETWEEN f.data_inicio AND COALESCE(
+                --     f.data_fim_efetiva,
+                --     f.dpp,
+                --     CURRENT_DATE()
+                -- )  
+                THEN 1
                 ELSE 0
             END
         ) AS hipertensao_nao_especificada,
@@ -491,7 +501,9 @@ condicoes_flags AS (
         -- Sífilis: CID A51-A53 (considerar A50 para congênita se relevante) um pouco antes ou DURANTE a gestação
         MAX(
             CASE
-                WHEN cg.cid LIKE 'A5[1-3]%'
+                WHEN 
+                -- cg.cid LIKE 'A5[1-3]%'
+                REGEXP_CONTAINS(cg.cid, r'\bA5[1-3]\b')
                 AND cg.data_diagnostico BETWEEN DATE_SUB(
                     f.data_inicio,
                     INTERVAL 30 DAY
@@ -506,7 +518,8 @@ condicoes_flags AS (
         -- Tuberculose: CID A15-A19 um pouco antes ou DURANTE a gestação
         MAX(
             CASE
-                WHEN cg.cid LIKE 'A1[5-9]%'
+                -- WHEN cg.cid LIKE 'A1[5-9]%'
+                WHEN REGEXP_CONTAINS(cg.cid, r'\bA1[5-9]\b')
                 AND cg.data_diagnostico BETWEEN DATE_SUB(
                     f.data_inicio,
                     INTERVAL 6 MONTH
@@ -906,6 +919,7 @@ encaminhamento_hipertensao_sisreg AS (
         AND (
             s.sisreg_primeira_cid LIKE 'O10%'
             OR -- Hipertensão prévia
+            -- s.sisreg_primeira_cid LIKE 'I1[0-5]'
             REGEXP_CONTAINS(s.sisreg_primeira_cid, r'\bI1[0-5]\b')
             OR -- Hipertensão essencial
             s.sisreg_primeira_cid = 'O11'
@@ -959,6 +973,7 @@ encaminhamento_hipertensao_SER AS (
         AND (
             s.ser_descricao_cid LIKE 'O10%'
             OR -- Hipertensão prévia
+            -- s.ser_descricao_cid LIKE 'I1[0-5]'
             REGEXP_CONTAINS(s.ser_descricao_cid, r'\bI1[0-5]\b')
             OR -- Hipertensão essencial
             s.ser_descricao_cid = 'O11'
@@ -1077,8 +1092,10 @@ obesidade_gestante AS (
     f.id_gestacao,
     MAX(
       CASE
-        WHEN SAFE_CAST(fapn.imc_consulta AS FLOAT64) > 30
-          OR SAFE_CAST(fapn.imc_inicio AS FLOAT64) >= 30
+        WHEN 
+            --SAFE_CAST(fapn.imc_consulta AS FLOAT64) > 30
+          --OR 
+          SAFE_CAST(fapn.imc_inicio AS FLOAT64) >= 30
         THEN 1 ELSE 0
       END
     ) AS tem_obesidade
@@ -1305,6 +1322,7 @@ fatores_risco_pe_adequacao AS (
    -- Indicação de AAS (nova regra)
    CASE
      WHEN (
+        (
        (
          CASE WHEN COALESCE(prm.hist_pre_eclampsia,0) = 1 THEN 1 ELSE 0 END +
         --  CASE WHEN COALESCE(gravidez_gemelar_total,0) = 1 THEN 1 ELSE 0 END +
@@ -1322,6 +1340,9 @@ fatores_risco_pe_adequacao AS (
          CASE WHEN (f.numero_gestacao = 1 OR COALESCE(prm.nuliparidade_prenatal,0) = 1) THEN 1 ELSE 0 END +
          CASE WHEN COALESCE(pi.idade_atual, 0) >= 35 THEN 1 ELSE 0 END
        ) >= 2
+        ) AND 
+        --Inclusão condição de estar na 12a semana de gestação
+        DATE_DIFF ( CURRENT_DATE(), f.data_inicio, WEEK ) >= 12
      ) THEN 1 ELSE 0
    END AS tem_indicacao_aas,
 
@@ -1348,6 +1369,9 @@ fatores_risco_pe_adequacao AS (
          CASE WHEN (f.numero_gestacao = 1 OR COALESCE(prm.nuliparidade_prenatal,0) = 1) THEN 1 ELSE 0 END +
          CASE WHEN COALESCE(pi.idade_atual, 0) >= 35 THEN 1 ELSE 0 END
        ) >= 2
+     ) AND 
+     (  --Inclusão condição de estar na 12a semana de gestação
+        DATE_DIFF ( CURRENT_DATE(), f.data_inicio, WEEK ) >= 12
      ) AND paas.tem_prescricao_aas = 1 THEN 'Adequado - Com AAS'
      WHEN (
        (
@@ -1367,7 +1391,11 @@ fatores_risco_pe_adequacao AS (
          CASE WHEN (f.numero_gestacao = 1 OR COALESCE(prm.nuliparidade_prenatal,0) = 1) THEN 1 ELSE 0 END +
          CASE WHEN COALESCE(pi.idade_atual, 0) >= 35 THEN 1 ELSE 0 END
        ) >= 2
-     ) AND COALESCE(paas.tem_prescricao_aas,0) = 0 THEN 'Inadequado - Sem AAS'
+     ) AND 
+     (  --Inclusão condição de estar na 12a semana de gestação
+        DATE_DIFF ( CURRENT_DATE(), f.data_inicio, WEEK ) >= 12
+     ) AND
+     COALESCE(paas.tem_prescricao_aas,0) = 0 THEN 'Inadequado - Sem AAS'
      ELSE 'Sem indicação'
    END AS adequacao_aas_pe
   
