@@ -423,3 +423,114 @@ th {
         border-left: none;
     }
 }
+
+/* ==========================================================================
+   ALERTAS TEMÁTICOS (Modo Claro e Escuro)
+   ========================================================================== */
+
+/* Cores Base dos Alertas (Padrão Light) */
+:root {
+    --alert-info-bg: rgba(13, 110, 253, 0.05);
+    --alert-info-border: #0d6efd;
+
+    --alert-success-bg: #ecfdf5;
+    --alert-success-border: #10b981;
+
+    --alert-warning-bg: #fffbeb;
+    --alert-warning-border: #f59e0b;
+
+    --alert-danger-bg: #fef2f2;
+    --alert-danger-border: #ef4444;
+
+    --alert-purple-bg: #f5f3ff;
+    --alert-purple-border: #8b5cf6;
+
+    --alert-indigo-bg: #eef2ff;
+    --alert-indigo-border: #6366f1;
+
+    --alert-slate-bg: #f1f5f9;
+    --alert-slate-border: #64748b;
+
+    --alert-fuchsia-bg: #fdf4ff;
+    --alert-fuchsia-border: #d946ef;
+}
+
+/* Cores Base dos Alertas (Modo Dark) */
+[data-theme="dark"] {
+    --alert-info-bg: rgba(13, 110, 253, 0.15);
+    /* Mais opaco para contraste */
+    --alert-info-border: #3b82f6;
+
+    --alert-success-bg: rgba(16, 185, 129, 0.15);
+    --alert-success-border: #34d399;
+
+    --alert-warning-bg: rgba(245, 158, 11, 0.15);
+    --alert-warning-border: #fbbf24;
+
+    --alert-danger-bg: rgba(239, 68, 68, 0.15);
+    --alert-danger-border: #f87171;
+
+    --alert-purple-bg: rgba(139, 92, 246, 0.15);
+    --alert-purple-border: #a78bfa;
+
+    --alert-indigo-bg: rgba(99, 102, 241, 0.15);
+    --alert-indigo-border: #818cf8;
+
+    --alert-slate-bg: rgba(100, 116, 139, 0.15);
+    --alert-slate-border: #94a3b8;
+
+    --alert-fuchsia-bg: rgba(217, 70, 239, 0.15);
+    --alert-fuchsia-border: #e879f9;
+}
+
+.alert {
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid var(--alert-info-border);
+    /* Default fallback */
+    background-color: var(--alert-info-bg);
+    /* Default fallback */
+    border-radius: 0 4px 4px 0;
+    /* Um toque extra de design */
+}
+
+/* Modificadores */
+.alert.alert-info {
+    border-left-color: var(--alert-info-border);
+    background-color: var(--alert-info-bg);
+}
+
+.alert.alert-success {
+    border-left-color: var(--alert-success-border);
+    background-color: var(--alert-success-bg);
+}
+
+.alert.alert-warning {
+    border-left-color: var(--alert-warning-border);
+    background-color: var(--alert-warning-bg);
+}
+
+.alert.alert-danger {
+    border-left-color: var(--alert-danger-border);
+    background-color: var(--alert-danger-bg);
+}
+
+.alert.alert-purple {
+    border-left-color: var(--alert-purple-border);
+    background-color: var(--alert-purple-bg);
+}
+
+.alert.alert-indigo {
+    border-left-color: var(--alert-indigo-border);
+    background-color: var(--alert-indigo-bg);
+}
+
+.alert.alert-slate {
+    border-left-color: var(--alert-slate-border);
+    background-color: var(--alert-slate-bg);
+}
+
+.alert.alert-fuchsia {
+    border-left-color: var(--alert-fuchsia-border);
+    background-color: var(--alert-fuchsia-bg);
+}

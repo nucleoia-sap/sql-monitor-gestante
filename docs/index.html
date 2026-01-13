@@ -77,14 +77,17 @@
                         dados do Monitor Gestante. O código aqui apresentado é a versão exata utilizada em produção no
                         Google BigQuery.</p>
                 </div>
-                <div class="alert">
+                <div class="alert alert-info">
                     <strong>Uso Técnico:</strong> Utilize os links na barra lateral para navegar entre os procedimentos.
                     Cada seção contém a lógica detalhada, regras de negócio e o código SQL integral.
                 </div>
 
-                <div class="alert" style="border-left-color: #3b82f6; background-color: #eff6ff;">
+                <div class="alert alert-info">
                     <strong>📖 Como ler esta documentação (Para todos):</strong>
-                    <p>Pense neste monitor como um sistema de <strong>"Vigilância de Saúde 24h"</strong>. Ele lê milhares de dados todos os dias para responder perguntas simples: <em>"Quem está grávida?", "Quem precisa de ajuda urgente?", "Quem abandonou o tratamento?"</em>. Abaixo, explicamos como cada peça dessa engrenagem funciona.</p>
+                    <p>Pense neste monitor como um sistema de <strong>"Vigilância de Saúde 24h"</strong>. Ele lê
+                        milhares de dados todos os dias para responder perguntas simples: <em>"Quem está grávida?",
+                            "Quem precisa de ajuda urgente?", "Quem abandonou o tratamento?"</em>. Abaixo, explicamos
+                        como cada peça dessa engrenagem funciona.</p>
                 </div>
             </section>
 
@@ -97,7 +100,7 @@
                         e equipe responsável.</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #10b981; background-color: #ecfdf5;">
+                <div class="alert alert-success">
                     <strong>🔍 O Detetive de Inícios (Explicação Simplificada):</strong>
                     <p>Imagine que o sistema é um detetive procurando pistas nos prontuários. A principal "pista" é o
                         código Z32.1 (Confirmação de Gravidez). Mas o detetive é esperto: se ele encontrar uma nova
@@ -178,7 +181,7 @@ SELECT filtrado.*, edf.equipe_nome, edf.clinica_nome FROM filtrado LEFT JOIN equ
                         vitais e prescrições.</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #ec4899; background-color: #fdf2f8;">
+                <div class="alert alert-fuchsia">
                     <strong>📒 O Diário da Gestante Digital:</strong>
                     <p>Aqui transformamos o prontuário em um diário organizado. O sistema varre as consultas para
                         responder: <em>"Ela está ganhando peso direitinho?"</em> (cruzando peso x altura) e <em>"Ela foi
@@ -287,7 +290,7 @@ END;</code></pre>
                         ACS.</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+                <div class="alert alert-warning">
                     <strong>🏠 Olheiros da Comunidade:</strong>
                     <p>Muitas vezes a saúde vai até a casa da pessoa. Este script conta quantas vezes o Agente
                         Comunitário (ACS) bateu na porta da gestante. É vital para saber quem está sendo acompanhado de
@@ -331,7 +334,7 @@ END;</code></pre>
                         (Vitai).</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #ef4444; background-color: #fef2f2;">
+                <div class="alert alert-danger">
                     <strong>🚨 O Alerta Vermelho:</strong>
                     <p>Se uma gestante passa mal e vai para a UPA ou Hospital, a Clínica da Família precisa saber. Este
                         "robô" fica vigiando o sistema de hospitais (Vitai). Se ele vê o nome de uma gestante lá, ele
@@ -378,9 +381,11 @@ END;</code></pre>
                         (Pre-Natal AR).</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #8b5cf6; background-color: #f5f3ff;">
+                <div class="alert alert-purple">
                     <strong>🏥 O Pedido de Socorro (SISREG/SER):</strong>
-                    <p>Às vezes, a UBS (postinho) não consegue resolver sozinha. O médico precisa chamar um especialista. Este script verifica se esse "pedido de socorro" foi feito (no sistema SISREG ou SER) e se ele foi aceito. É crucial para gantir que casos graves não fiquem parados na fila.</p>
+                    <p>Às vezes, a UBS (postinho) não consegue resolver sozinha. O médico precisa chamar um
+                        especialista. Este script verifica se esse "pedido de socorro" foi feito (no sistema SISREG ou
+                        SER) e se ele foi aceito. É crucial para gantir que casos graves não fiquem parados na fila.</p>
                 </div>
                 <h3 id="proced-5-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -432,9 +437,12 @@ END;</code></pre>
                         gestante.</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #6366f1; background-color: #eef2ff;">
+                <div class="alert alert-indigo">
                     <strong>🧠 O Cérebro de Tudo (Linha do Tempo):</strong>
-                    <p>Este é o script mais inteligente. Ele pega as peças soltas (a consulta de peso do script 2, o alerta de emergência do script 4, o remédio do script 8) e monta o quebra-cabeça. Além disso, ele diagnóstica riscos automaticamente: se a pressão da paciente deu alta 3 vezes, ele coloca um carimbo de "Hipertensa nela", mesmo que ninguém tenha anotado isso manualmente.</p>
+                    <p>Este é o script mais inteligente. Ele pega as peças soltas (a consulta de peso do script 2, o
+                        alerta de emergência do script 4, o remédio do script 8) e monta o quebra-cabeça. Além disso,
+                        ele diagnóstica riscos automaticamente: se a pressão da paciente deu alta 3 vezes, ele coloca um
+                        carimbo de "Hipertensa nela", mesmo que ninguém tenha anotado isso manualmente.</p>
                 </div>
                 <h3 id="proced-6-logica">Detalhamento Técnico das CTEs</h3>
 
@@ -603,9 +611,11 @@ SELECT * FROM filtrado; -- (Simplificado para o portal)
                         de BI (Tableau/Power BI).</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #64748b; background-color: #f1f5f9;">
+                <div class="alert alert-slate">
                     <strong>🏷️ O Organizador de Etiquetas:</strong>
-                    <p>Para facilitar a vida de quem faz gráficos e relatórios, este script pega a lista complexa de problemas de uma paciente e transforma em etiquetas simples: "Diabética", "Hipertensa", "Menor de Idade". Assim, fica fácil contar: "Quantas hipertensas temos hoje?".</p>
+                    <p>Para facilitar a vida de quem faz gráficos e relatórios, este script pega a lista complexa de
+                        problemas de uma paciente e transforma em etiquetas simples: "Diabética", "Hipertensa", "Menor
+                        de Idade". Assim, fica fácil contar: "Quantas hipertensas temos hoje?".</p>
                 </div>
                 <h3 id="proced-7-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -639,9 +649,12 @@ end;</code></pre>
                         sífilis congênita.</p>
                 </div>
 
-                <div class="alert" style="border-left-color: #d946ef; background-color: #fdf4ff;">
+                <div class="alert alert-fuchsia">
                     <strong>🛡️ Missão Zero Sífilis:</strong>
-                    <p>Sífilis na gravidez é muito perigoso, mas tem cura fácil. O problema é que o tratamento tem regras rígidas (3 doses, intervalo certo). Este robô é um auditor chato: ele conta os dias entre cada dose de Penicilina. Se a paciente atrasou um dia sequer, ele marca em vermelho: "Tratamento Falhou - Reiniciar". Ele não deixa passar nada.</p>
+                    <p>Sífilis na gravidez é muito perigoso, mas tem cura fácil. O problema é que o tratamento tem
+                        regras rígidas (3 doses, intervalo certo). Este robô é um auditor chato: ele conta os dias entre
+                        cada dose de Penicilina. Se a paciente atrasou um dia sequer, ele marca em vermelho: "Tratamento
+                        Falhou - Reiniciar". Ele não deixa passar nada.</p>
                 </div>
                 <h3 id="proced-8-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
