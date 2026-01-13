@@ -5,13 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor Gestante | Repositório SQL Integral</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Alterado para o CSS responsivo -->
+    <link rel="stylesheet" href="styles_responsive.css">
 </head>
 
 <body>
+    <!-- HEADER MOBILE (NOVO) -->
+    <div class="mobile-header">
+        <button class="btn-mobile-menu" id="btn-menu" aria-label="Abrir Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span class="mobile-title">Monitor Gestante</span>
+        <button class="btn-mobile-toc" id="btn-toc" aria-label="Abrir Tópicos">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 3v18" />
+                <path d="m14 9 3 3-3 3" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- OVERLAY (NOVO) -->
+    <div class="overlay" id="overlay"></div>
+
     <div class="app-container">
         <!-- Sidebar Esquerda: Navegação Global -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo-section">
                 <h1>Monitor Gestante</h1>
                 <p style="font-size: 0.8rem; color: var(--text-muted);">Master SQL Repository</p>
@@ -56,6 +81,11 @@
                     <strong>Uso Técnico:</strong> Utilize os links na barra lateral para navegar entre os procedimentos.
                     Cada seção contém a lógica detalhada, regras de negócio e o código SQL integral.
                 </div>
+
+                <div class="alert" style="border-left-color: #3b82f6; background-color: #eff6ff;">
+                    <strong>📖 Como ler esta documentação (Para todos):</strong>
+                    <p>Pense neste monitor como um sistema de <strong>"Vigilância de Saúde 24h"</strong>. Ele lê milhares de dados todos os dias para responder perguntas simples: <em>"Quem está grávida?", "Quem precisa de ajuda urgente?", "Quem abandonou o tratamento?"</em>. Abaixo, explicamos como cada peça dessa engrenagem funciona.</p>
+                </div>
             </section>
 
             <!-- SEÇÃO 1: PROCED_1 -->
@@ -65,6 +95,14 @@
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">Identificar e consolidar gestações únicas, definindo início, fim, fase atual
                         e equipe responsável.</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #10b981; background-color: #ecfdf5;">
+                    <strong>🔍 O Detetive de Inícios (Explicação Simplificada):</strong>
+                    <p>Imagine que o sistema é um detetive procurando pistas nos prontuários. A principal "pista" é o
+                        código Z32.1 (Confirmação de Gravidez). Mas o detetive é esperto: se ele encontrar uma nova
+                        confirmação apenas 10 dias depois da primeira, ele sabe que é a <em>mesma</em> gravidez. Ele só
+                        considera uma <strong>nova história</strong> se passarem mais de 60 dias sem notícias.</p>
                 </div>
                 <h3 id="proced-1-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -138,6 +176,14 @@ SELECT filtrado.*, edf.equipe_nome, edf.clinica_nome FROM filtrado LEFT JOIN equ
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">Consolidar atendimentos de pré-natal na APS, incluindo antropometria, sinais
                         vitais e prescrições.</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #ec4899; background-color: #fdf2f8;">
+                    <strong>📒 O Diário da Gestante Digital:</strong>
+                    <p>Aqui transformamos o prontuário em um diário organizado. O sistema varre as consultas para
+                        responder: <em>"Ela está ganhando peso direitinho?"</em> (cruzando peso x altura) e <em>"Ela foi
+                            hoje na consulta?"</em>. Ele ignora consultas que não sejam de pré-natal para não "sujar" o
+                        diário.</p>
                 </div>
                 <h3 id="proced-2-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -240,6 +286,13 @@ END;</code></pre>
                     <p class="meta-content">Acompanhar a frequência e autoria das visitas domiciliares realizadas pelos
                         ACS.</p>
                 </div>
+
+                <div class="alert" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+                    <strong>🏠 Olheiros da Comunidade:</strong>
+                    <p>Muitas vezes a saúde vai até a casa da pessoa. Este script conta quantas vezes o Agente
+                        Comunitário (ACS) bateu na porta da gestante. É vital para saber quem está sendo acompanhado de
+                        perto, mesmo sem ir ao posto.</p>
+                </div>
                 <h3 id="proced-3-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
                     <li><strong>Filtro Profissional:</strong> Seleciona estritamente 'Agente comunitário de saúde'.</li>
@@ -276,6 +329,13 @@ END;</code></pre>
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">Monitorar intercorrências através de atendimentos na rede de emergência
                         (Vitai).</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #ef4444; background-color: #fef2f2;">
+                    <strong>🚨 O Alerta Vermelho:</strong>
+                    <p>Se uma gestante passa mal e vai para a UPA ou Hospital, a Clínica da Família precisa saber. Este
+                        "robô" fica vigiando o sistema de hospitais (Vitai). Se ele vê o nome de uma gestante lá, ele
+                        avisa imediatamente: <em>"Atenção, sua paciente teve uma emergência!"</em>.</p>
                 </div>
                 <h3 id="proced-4-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -316,6 +376,11 @@ END;</code></pre>
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">Identificar solicitações de regulação para Pré-Natal de Alto Risco
                         (Pre-Natal AR).</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #8b5cf6; background-color: #f5f3ff;">
+                    <strong>🏥 O Pedido de Socorro (SISREG/SER):</strong>
+                    <p>Às vezes, a UBS (postinho) não consegue resolver sozinha. O médico precisa chamar um especialista. Este script verifica se esse "pedido de socorro" foi feito (no sistema SISREG ou SER) e se ele foi aceito. É crucial para gantir que casos graves não fiquem parados na fila.</p>
                 </div>
                 <h3 id="proced-5-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -365,6 +430,11 @@ END;</code></pre>
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">O "Cérebro" do monitoramento. Consolida todos os dados em uma visão 360º da
                         gestante.</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #6366f1; background-color: #eef2ff;">
+                    <strong>🧠 O Cérebro de Tudo (Linha do Tempo):</strong>
+                    <p>Este é o script mais inteligente. Ele pega as peças soltas (a consulta de peso do script 2, o alerta de emergência do script 4, o remédio do script 8) e monta o quebra-cabeça. Além disso, ele diagnóstica riscos automaticamente: se a pressão da paciente deu alta 3 vezes, ele coloca um carimbo de "Hipertensa nela", mesmo que ninguém tenha anotado isso manualmente.</p>
                 </div>
                 <h3 id="proced-6-logica">Detalhamento Técnico das CTEs</h3>
 
@@ -532,6 +602,11 @@ SELECT * FROM filtrado; -- (Simplificado para o portal)
                     <p class="meta-content">Desnormalizar os riscos para facilitar a criação de filtros em ferramentas
                         de BI (Tableau/Power BI).</p>
                 </div>
+
+                <div class="alert" style="border-left-color: #64748b; background-color: #f1f5f9;">
+                    <strong>🏷️ O Organizador de Etiquetas:</strong>
+                    <p>Para facilitar a vida de quem faz gráficos e relatórios, este script pega a lista complexa de problemas de uma paciente e transforma em etiquetas simples: "Diabética", "Hipertensa", "Menor de Idade". Assim, fica fácil contar: "Quantas hipertensas temos hoje?".</p>
+                </div>
                 <h3 id="proced-7-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
                     <li><strong>SPLIT/UNNEST:</strong> Explode a string de riscos separados por ponto-e-vírgula em
@@ -562,6 +637,11 @@ end;</code></pre>
                     <span class="meta-label">Objetivo</span>
                     <p class="meta-content">Acompanhamento rigoroso do tratamento de sífilis (Penicilina) e prevenção de
                         sífilis congênita.</p>
+                </div>
+
+                <div class="alert" style="border-left-color: #d946ef; background-color: #fdf4ff;">
+                    <strong>🛡️ Missão Zero Sífilis:</strong>
+                    <p>Sífilis na gravidez é muito perigoso, mas tem cura fácil. O problema é que o tratamento tem regras rígidas (3 doses, intervalo certo). Este robô é um auditor chato: ele conta os dias entre cada dose de Penicilina. Se a paciente atrasou um dia sequer, ele marca em vermelho: "Tratamento Falhou - Reiniciar". Ele não deixa passar nada.</p>
                 </div>
                 <h3 id="proced-8-logica">Lógica Detalhada (CTEs)</h3>
                 <ul>
@@ -622,7 +702,7 @@ CALL `rj-sms-sandbox.sub_pav_us.proced_7_categorias_risco`();</code></pre>
             </footer>
         </main>
 
-        <aside class="toc-sidebar">
+        <aside class="toc-sidebar" id="toc-sidebar">
             <h3 class="toc-title">Nesta Página</h3>
             <ul class="toc-list">
                 <li><a href="#visao-geral" class="toc-link active">Visão Geral</a></li>
@@ -700,7 +780,59 @@ CALL `rj-sms-sandbox.sub_pav_us.proced_7_categorias_risco`();</code></pre>
             </ul>
         </aside>
     </div>
-    <script src="scripts.js"></script>
+
+    <!-- Script de Controle Responsivo (Inline para evitar novo arquivo por enquanto) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnMenu = document.getElementById('btn-menu');
+            const btnToc = document.getElementById('btn-toc');
+            const sidebar = document.getElementById('sidebar');
+            const tocSidebar = document.getElementById('toc-sidebar');
+            const overlay = document.getElementById('overlay');
+            const themeToggle = document.getElementById('theme-toggle');
+
+            // Toggle Sidebar Esquerda
+            btnMenu.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                // Fecha a outra se estiver aberta
+                tocSidebar.classList.remove('active');
+            });
+
+            // Toggle Sidebar Direita (TOC)
+            btnToc.addEventListener('click', () => {
+                tocSidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                // Fecha a outra se estiver aberta
+                sidebar.classList.remove('active');
+            });
+
+            // Fechar ao clicar no Overlay
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                tocSidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+
+            // Fechar ao clicar em link (Mobile)
+            document.querySelectorAll('.nav-link, .toc-link, .toc-sublink').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 1200) {
+                        sidebar.classList.remove('active');
+                        tocSidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
+
+            // Tema (Mantido do original)
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            });
+        });
+    </script>
+    <!-- <script src="scripts.js"></script> -->
 </body>
 
 </html>

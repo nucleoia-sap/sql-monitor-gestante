@@ -1,3 +1,7 @@
+/* ==========================================================================
+   1. ESTILOS ORIGINAIS (Cópia fiel de styles.css para manter Design Original)
+   ========================================================================== */
+
 :root {
     --bg-main: #ffffff;
     --bg-sidebar: #f8f9fa;
@@ -7,7 +11,11 @@
     --border-color: #dee2e6;
     --code-bg: #f8f9fa;
     --sidebar-width: 280px;
-    --toc-width: 240px;
+    --toc-width: 300px;
+    /* Aumentado levemente para o dropdown */
+
+    /* Variável NOVA para o header */
+    --mobile-header-height: 60px;
 }
 
 [data-theme="dark"] {
@@ -32,25 +40,79 @@ body {
     color: var(--text-main);
     line-height: 1.5;
     display: flex;
+    flex-direction: column;
+    /* Adiciona padding para compensar o header fixo sempre visível */
+    padding-top: var(--mobile-header-height);
 }
 
-/* Layout de 3 Colunas */
+/* Header Fixo (Sempre Visível) */
+.mobile-header {
+    display: flex;
+    /* Flex sempre */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--mobile-header-height);
+    background-color: var(--bg-main);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 1100;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-mobile-menu,
+.btn-mobile-toc {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+/* Menu Hambúrguer (Esquerdo) - Oculto por padrão no Desktop */
+.btn-mobile-menu {
+    display: none;
+}
+
+.mobile-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 1rem;
+}
+
+/* Layout Container */
 .app-container {
     display: flex;
     width: 100%;
 }
 
-/* Sidebar Esquerda (Navegação Global) */
+/* ==========================================================================
+   SIDEBAR ESQUERDA (Navegação Global)
+   ========================================================================== */
 .sidebar {
     width: var(--sidebar-width);
-    height: 100vh;
+    /* Ajusta altura e topo para respeitar o Header */
+    height: calc(100vh - var(--mobile-header-height));
+    top: var(--mobile-header-height);
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     position: fixed;
     left: 0;
-    top: 0;
     padding: 2rem 1.5rem;
     overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+    /* Visível no Desktop */
 }
 
 .logo-section {
@@ -91,27 +153,48 @@ body {
     color: var(--accent-blue);
 }
 
-/* Conteúdo Central */
-.main-content {
-    margin-left: var(--sidebar-width);
-    margin-right: var(--toc-width);
-    flex: 1;
-    padding: 3rem 4rem;
-    max-width: 1000px;
-}
-
-/* Sidebar Direita (TOC) */
+/* ==========================================================================
+   SIDEBAR DIREITA / TOC (Dropdown Global)
+   Agora é drop-down em TODAS as resoluções
+   ========================================================================== */
 .toc-sidebar {
     width: var(--toc-width);
-    height: 100vh;
+    /* height: auto; REMOVIDO */
+    height: calc(100vh - var(--mobile-header-height));
+    /* Vai até o final */
     position: fixed;
     right: 0;
-    top: 0;
-    padding: 3rem 1.5rem;
+    top: var(--mobile-header-height);
+    /* Logo abaixo do header */
+
+    /* Estilo "Card/Dropdown" */
+    background-color: var(--bg-main);
     border-left: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    padding: 1.5rem;
     overflow-y: auto;
+    z-index: 1050;
+
+    /* Estado Inicial: Oculto (Deslizado para cima) */
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s 0.3s;
+
+    /* Garante que o dropdown não fique "atrás" de z-index menores enquanto sobe */
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0s 0.3s;
 }
 
+.toc-sidebar.active {
+    transform: translateY(0);
+    visibility: visible;
+    opacity: 1;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0s;
+}
+
+/* Conteúdo Interno TOC */
 .toc-title {
     font-size: 0.8rem;
     font-weight: 600;
@@ -120,7 +203,8 @@ body {
     margin-bottom: 1rem;
 }
 
-.toc-list {
+.toc-list,
+.toc-sublist {
     list-style: none;
 }
 
@@ -144,7 +228,6 @@ body {
 }
 
 .toc-sublist {
-    list-style: none;
     margin-left: 1.5rem;
     padding: 0.25rem 0;
 }
@@ -162,12 +245,27 @@ body {
     color: var(--text-main);
 }
 
-.toc-sublink.active {
-    color: var(--accent-blue);
-    font-weight: 600;
+
+/* ==========================================================================
+   CONTEÚDO PRINCIPAL
+   ========================================================================== */
+.main-content {
+    /* Margin Left considera a sidebar fixa */
+    margin-left: var(--sidebar-width);
+    /* Margin Right é ZERO pois o TOC agora é overlay */
+    margin-right: 0;
+
+    flex: 1;
+    padding: 3rem 4rem;
+    max-width: 1000px;
+    /* Limite de leitura */
+    width: 100%;
 }
 
-/* Estilização de Seções */
+
+/* ==========================================================================
+   ELEMENTOS GERAIS DE DOCUMENTAÇÃO
+   ========================================================================== */
 .doc-section {
     margin-bottom: 5rem;
 }
@@ -186,7 +284,6 @@ body {
     color: var(--accent-blue);
 }
 
-/* Blocos de Informação Padrão */
 .meta-block {
     margin-bottom: 1.5rem;
 }
@@ -203,7 +300,6 @@ body {
     font-size: 1rem;
 }
 
-/* Code Blocks */
 pre {
     background-color: var(--code-bg);
     padding: 1rem;
@@ -223,7 +319,6 @@ pre code {
     line-height: 1.5;
 }
 
-/* Tabelas */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -246,7 +341,6 @@ th {
     font-size: 0.75rem;
 }
 
-/* Alertas */
 .alert {
     padding: 1rem;
     margin: 1.5rem 0;
@@ -268,23 +362,64 @@ th {
     color: var(--text-main);
 }
 
-@media (max-width: 1200px) {
-    .toc-sidebar {
-        display: none;
-    }
-
-    .main-content {
-        margin-right: 0;
-    }
+/* Overlay Escuro */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 995;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
+.overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+
+/* ==========================================================================
+   MEDIA QUERIES
+   ========================================================================== */
+
+/* MOBILE / TABLET (< 768px) */
+/* Nota: Como o TOC já é dropdown global, só precisamos lidar com a Sidebar Esquerda */
 @media (max-width: 768px) {
-    .sidebar {
-        display: none;
+
+    /* Exibir botão hambúrguer */
+    .btn-mobile-menu {
+        display: flex;
     }
 
+    /* Conteúdo expande pois sidebar some */
     .main-content {
         margin-left: 0;
-        padding: 2rem;
+        padding: 1.5rem;
+    }
+
+    /* Sidebar Esquerda (Gaveta) */
+    .sidebar {
+        transform: translateX(-100%);
+        /* Sai da tela */
+        width: 80%;
+        max-width: 300px;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        border-right: none;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+        /* Entra na tela */
+    }
+
+    /* Ajuste do TOC para mobile (largura total) se desejar, ou manter fixo */
+    .toc-sidebar {
+        width: 100%;
+        /* Em mobile, melhor ocupar largura toda */
+        border-left: none;
     }
 }
