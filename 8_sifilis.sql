@@ -1,6 +1,9 @@
+-- Sintaxe para criar ou substituir uma consulta salva (procedimento)
+CREATE OR REPLACE PROCEDURE `rj-sms-sandbox.sub_pav_us.proced_8_sifilis`()
+
 BEGIN
 
-CREATE OR REPLACE TABLE `rj-sms-sandbox.sub_pav_us.sifilis_gestantes` AS
+CREATE OR REPLACE TABLE `rj-sms-sandbox.sub_pav_us._sifilis_gestantes` AS
 
 WITH
 -- Etapa 1: Obter a base de gestantes ATIVAS.
@@ -213,3 +216,6 @@ LEFT JOIN dados_parceiro_raw AS parceiro ON ct.cpf = parceiro.cpf
 ORDER BY
   ct.id_paciente,
   ct.data_dispensacao_dose_1;
+
+
+END;
