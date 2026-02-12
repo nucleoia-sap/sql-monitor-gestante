@@ -431,7 +431,7 @@ partos_associados AS (
 ),
 
 -- CTEs de Agregação (presumivelmente de tabelas fato pré-calculadas, o que é bom)
--- CTE 21: consultas_prenatal
+-- CTE 21: consultas_prenatal (apenas tipo_atd_prof_saude = 'Médico e Enfermeiro')
 consultas_prenatal AS (
     SELECT
         id_gestacao,
@@ -439,6 +439,21 @@ consultas_prenatal AS (
     FROM
         -- {{ ref('mart_bi_gestacoes__atendimentos_prenatal_aps') }}
         `rj-sms-sandbox.sub_pav_us._atendimentos_prenatal_aps`
+    WHERE
+        tipo_atd_prof_saude = 'Médico e Enfermeiro'
+    GROUP BY
+        id_gestacao
+),
+
+-- CTE 21b: atendimentos por saúde bucal (tipo_atd_prof_saude = 'Saúde Bucal')
+consultas_saude_bucal AS (
+    SELECT
+        id_gestacao,
+        COUNT(*) AS total_consultas_saude_bucal
+    FROM
+        `rj-sms-sandbox.sub_pav_us._atendimentos_prenatal_aps`
+    WHERE
+        tipo_atd_prof_saude = 'Saúde Bucal'
     GROUP BY
         id_gestacao
 ),
@@ -1866,6 +1881,7 @@ final AS (
         cp.total_consultas_prenatal,
         0
     ) AS total_consultas_prenatal,
+    COALESCE(csb.total_consultas_saude_bucal, 0) AS total_consultas_saude_bucal,
     COALESCE(
         sp.prescricao_acido_folico,
         'não'
@@ -1984,6 +2000,7 @@ final AS (
         LEFT JOIN mudanca_equipe me ON f.id_gestacao = me.id_gestacao -- Mudado para id_gestacao
         LEFT JOIN partos_associados pa ON f.id_gestacao = pa.id_gestacao -- Mudado para id_gestacao
         LEFT JOIN consultas_prenatal cp ON f.id_gestacao = cp.id_gestacao
+        LEFT JOIN consultas_saude_bucal csb ON f.id_gestacao = csb.id_gestacao
         LEFT JOIN status_prescricoes sp ON f.id_gestacao = sp.id_gestacao
         LEFT JOIN ultima_consulta_prenatal ucp ON f.id_gestacao = ucp.id_gestacao
         LEFT JOIN visitas_acs_por_gestacao v_acs ON f.id_gestacao = v_acs.id_gestacao
@@ -2011,6 +2028,7 @@ final AS (
         ) sis_sol ON f.id_gestacao = sis_sol.id_gestacao
         WHERE 
             f.fase_atual = 'Gestação'
+            AND COALESCE(pi.obito_indicador, FALSE) = FALSE
         --Filtro aplicado no final
         
 )

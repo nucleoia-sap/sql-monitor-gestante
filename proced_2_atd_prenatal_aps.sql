@@ -169,12 +169,13 @@ peso_altura_inicio AS (
    p.dias_diferenca AS dias_diferenca_peso_dum,
    p.origem_peso,
    a.altura_cm / 100 AS altura_m,
-   ROUND(p.peso / POW(a.altura_cm / 100, 2), 1) AS imc_inicio,
+   ROUND(p.peso / NULLIF(POW(a.altura_cm / 100, 2), 0), 1) AS imc_inicio,
    CASE
-     WHEN ROUND(p.peso / POW(a.altura_cm / 100, 2), 1) < 18 THEN 'Baixo peso'
-     WHEN ROUND(p.peso / POW(a.altura_cm / 100, 2), 1) < 25 THEN 'Eutrófico'
-     WHEN ROUND(p.peso / POW(a.altura_cm / 100, 2), 1) < 30 THEN 'Sobrepeso'
-     ELSE 'Obesidade'
+     WHEN ROUND(p.peso / NULLIF(POW(a.altura_cm / 100, 2), 0), 1) < 18 THEN 'Baixo peso'
+     WHEN ROUND(p.peso / NULLIF(POW(a.altura_cm / 100, 2), 0), 1) < 25 THEN 'Eutrófico'
+     WHEN ROUND(p.peso / NULLIF(POW(a.altura_cm / 100, 2), 0), 1) < 30 THEN 'Sobrepeso'
+     WHEN ROUND(p.peso / NULLIF(POW(a.altura_cm / 100, 2), 0), 1) >= 30 THEN 'Obesidade'
+     ELSE NULL
    END AS classificacao_imc_inicio
  FROM peso_proximo_inicio p
  JOIN altura_moda_completa a ON p.id_gestacao = a.id_gestacao
@@ -236,6 +237,28 @@ SELECT
   ea.estabelecimento.estabelecimento_tipo,
   ea.profissional_saude_responsavel.nome AS profissional_nome,
   ea.profissional_saude_responsavel.especialidade AS profissional_categoria,
+  ANY_VALUE(
+    CASE
+      WHEN LOWER(COALESCE(ea.profissional_saude_responsavel.especialidade, '')) LIKE '%dentista%'
+        OR LOWER(COALESCE(ea.profissional_saude_responsavel.especialidade, '')) LIKE '%odonto%' THEN 'Saúde Bucal'
+      WHEN ea.profissional_saude_responsavel.especialidade = 'Farmacêutico Hospitalar e Clinico - NASF' THEN 'Farmacêutico'
+      WHEN ea.profissional_saude_responsavel.especialidade IN (
+        'Médico da estratégia de saúde da família',
+        'Enfermeiro da estratégia saúde da família',
+        'Enfermeiro - Modelo B',
+        'Médico Clínico',
+        'Médico Ginecologista e Obstetra - NASF',
+        'Médico Ginecologista - Modelo B',
+        'Médico Clinico - Modelo B',
+        'Enfermeiro obstétrico',
+        'Enfermeiro',
+        'Enfermeiro Obstetrico - Nasf',
+        'Médico Generalista',
+        'Médico de Família e Comunidade'
+      ) THEN 'Médico e Enfermeiro'
+      ELSE 'Outros'
+    END
+  ) AS tipo_atd_prof_saude,
   ANY_VALUE(ea.medidas.altura) AS altura,
   ANY_VALUE(ea.medidas.peso) AS peso,
   ANY_VALUE(ea.medidas.imc) AS imc,
@@ -252,20 +275,24 @@ WHERE ea.subtipo = 'Atendimento SOAP'
 AND LOWER(ea.prontuario.fornecedor) = 'vitacare'
 -- AND c.situacao = 'ATIVO'
 -- outros filtros
-AND ea.profissional_saude_responsavel.especialidade IN (
-    'Médico da estratégia de saúde da família',
-    'Enfermeiro da estratégia saúde da família',
-    'Enfermeiro - Modelo B',
-    'Médico Clínico',
-    'Médico Ginecologista e Obstetra - NASF',
-    'Médico Ginecologista - Modelo B',
-    'Médico Clinico - Modelo B',
-    'Enfermeiro obstétrico',
-    'Enfermeiro',
-    'Enfermeiro Obstetrico - Nasf',
-    'Médico Generalista',
-    'Médico de Família e Comunidade',
-    'Farmacêutico Hospitalar e Clinico - NASF'
+AND (
+    ea.profissional_saude_responsavel.especialidade IN (
+      'Médico da estratégia de saúde da família',
+      'Enfermeiro da estratégia saúde da família',
+      'Enfermeiro - Modelo B',
+      'Médico Clínico',
+      'Médico Ginecologista e Obstetra - NASF',
+      'Médico Ginecologista - Modelo B',
+      'Médico Clinico - Modelo B',
+      'Enfermeiro obstétrico',
+      'Enfermeiro',
+      'Enfermeiro Obstetrico - Nasf',
+      'Médico Generalista',
+      'Médico de Família e Comunidade',
+      'Farmacêutico Hospitalar e Clinico - NASF'
+    )
+    OR LOWER(COALESCE(ea.profissional_saude_responsavel.especialidade, '')) LIKE '%dentista%'
+    OR LOWER(COALESCE(ea.profissional_saude_responsavel.especialidade, '')) LIKE '%odonto%'
   )
   GROUP BY 1,2,3,4,5,6,7
 ),
@@ -326,7 +353,7 @@ consultas_enriquecidas AS (
 
 
    ag.peso - pai.peso AS ganho_peso_acumulado,
-   ROUND(ag.peso / POW(pai.altura_m, 2), 1) AS imc_consulta
+   ROUND(ag.peso / NULLIF(POW(pai.altura_m, 2), 0), 1) AS imc_consulta
 
 
  FROM atendimentos_gestacao ag
@@ -372,7 +399,8 @@ SELECT
 
  estabelecimento,
  profissional_nome,
- profissional_categoria
+ profissional_categoria,
+ tipo_atd_prof_saude
 
 
 FROM consultas_enriquecidas
